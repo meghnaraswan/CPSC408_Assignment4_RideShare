@@ -125,16 +125,7 @@ def new_or_returning():
     if choice == 1:
         new_user_info()
     elif choice == 2:
-        isDriver = 1
-        insertUsersQuery = '''
-        INSERT INTO Users (UserID, IsDriver)
-        VALUES(%s, %s);
-        '''
-        usersValue = [
-        (userID, isDriver)
-        ]
-        cur_obj.executemany(insertUsersQuery, usersValue)
-        conn.commit()
+        old_user_info()
 
 def new_user_info():
     userID = ""
@@ -150,9 +141,13 @@ def new_user_info():
     # isDriver = cur_obj.execute(selectIsDriver)
 
     if isDriver == 1:
-        set_is_driver_active(userID)
+        create_rider(userID)
+        new_driver_choice(userID)
     else:
-        rider_choice(userID)
+        new_rider_choice(userID)
+
+def old_user_info():
+    return
     
 def set_is_driver(userID, isDriver):
     print('''
@@ -186,23 +181,65 @@ def set_is_driver(userID, isDriver):
         conn.commit()
         return isDriver
 
+def new_driver_choice(userID):
+    set_is_driver_active(userID)
+    return
+
 def set_is_driver_active(userID):
     print('''
     Hi Driver! Are you active currently? \n 
     1) Yes, I am active \n
     2) No, I am not active \n
     ''') 
+
+    isActive = 1
+    isNotActive = 0
+
     choice = get_choice([1, 2])
     if choice == 1:
-        updateActive = "UPDATE Drivers SET IsActive = 1 WHERE DriverID = '" + str(userID) + "';"
-        cur_obj.execute(updateActive)
-        conn.commit()
-    elif choice == 2:
-        updateNotActive = "UPDATE Drivers SET IsActive = 0 WHERE DriverID = '" + str(userID) + "';"
-        cur_obj.execute(updateNotActive)
+
+        insertDriversQuery = '''
+        INSERT INTO Drivers (DriverID, IsActive)
+        VALUES(%s, %s);
+        '''
+        driversValues = [
+        (userID, isActive),
+        ]
+        cur_obj.executemany(insertDriversQuery, driversValues)
         conn.commit()
 
-def rider_choice(userID):
+        # updateActive = "UPDATE Drivers SET IsActive = 1 WHERE DriverID = '" + str(userID) + "';"
+        # cur_obj.execute(updateActive)
+        # conn.commit()
+
+    elif choice == 2:
+
+        insertDriversQuery = '''
+        INSERT INTO Drivers (DriverID, IsActive)
+        VALUES(%s, %s);
+        '''
+        driversValues = [
+        (userID, isNotActive),
+        ]
+        cur_obj.executemany(insertDriversQuery, driversValues)
+        conn.commit()
+
+        # updateNotActive = "UPDATE Drivers SET IsActive = 0 WHERE DriverID = '" + str(userID) + "';"
+        # cur_obj.execute(updateNotActive)
+        # conn.commit()
+
+def create_rider(userID):
+    insertRidersQuery = '''
+    INSERT INTO Riders (RiderID)
+    VALUES(%s);
+    '''
+    ridersValues = [
+    (userID),
+    ]
+    cur_obj.executemany(insertRidersQuery, ridersValues)
+    conn.commit()
+
+def new_rider_choice(userID):
     print('''
     Hi Rider! What would you like to do? \n 
     1) Call a ride \n
@@ -248,7 +285,7 @@ if __name__ == "__main__":
     # print_to_verify()
     # create()
     # insert_data()
-    user_info()
+    # user_info()
     # drop_all_tables()
     conn.close()
     print("end main program")
