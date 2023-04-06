@@ -117,7 +117,7 @@ def insert_data():
 
 def new_or_returning():
     print('''
-    Hello! Are you a new or returningr? \n 
+    Hello! Are you a new or returning user? \n 
     1) New User \n
     2) Returning User \n
     ''') 
@@ -135,15 +135,17 @@ def new_user_info():
     while userID.isdigit() == False:
         userID = input("Invalid ID. Please enter your ID again: ")
 
+    userID = int(userID)
+
     isDriver = set_is_driver(userID, isDriver)
 
     # selectIsDriver = "SELECT IsDriver FROM Users WHERE UserID = '" + str(userID) + "';"
     # isDriver = cur_obj.execute(selectIsDriver)
 
     if isDriver == 1:
-        create_rider(userID)
         new_driver_choice(userID)
     else:
+        create_rider(userID)
         new_rider_choice(userID)
 
 def old_user_info():
@@ -231,15 +233,34 @@ def set_is_driver_active(userID):
 def create_rider(userID):
     insertRidersQuery = '''
     INSERT INTO Riders (RiderID)
-    VALUES(%s);
+    VALUES(%s, %s);
     '''
     ridersValues = [
-    (userID),
+    (userID, 'NULL'),
     ]
     cur_obj.executemany(insertRidersQuery, ridersValues)
     conn.commit()
 
 def new_rider_choice(userID):
+    print('''
+    Hi Rider! Would you like to call a ride? \n 
+    1) Yes \n
+    2) No \n
+    ''') 
+    choice = get_choice([1, 2])
+    if choice == 1:
+        print("call ride")
+        new_user_call_ride(userID)
+    elif choice == 2:
+        print("exit")
+        # rate_My_Driver(userID)
+
+def new_user_call_ride(userID):
+    pickUpLoc = input("Please type your Pick Up Location")
+    dropOffLoc = input("Please type your Drop Off Location")
+    # sql2 = "UPDATE Rides SET PickUpAddress = " + pickUpLoc + ", DropOffAddress = " + dropOffLoc + " WHERE RiderID = '" + str(riderID) + "';"
+
+def returning_rider_choice():
     print('''
     Hi Rider! What would you like to do? \n 
     1) Call a ride \n
@@ -252,7 +273,6 @@ def new_rider_choice(userID):
     elif choice == 2:
         print("choice 2")
         # rate_My_Driver(userID)
-
 
 # from helper function in Assignment 4
 def get_choice(lst):
