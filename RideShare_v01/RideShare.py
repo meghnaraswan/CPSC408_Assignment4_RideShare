@@ -214,7 +214,7 @@ def get_last_driver_id(userID):
     selectLastDriver = "SELECT DriverID FROM Rides WHERE RiderID = '" + str(userID) + "' ORDER BY RideID DESC LIMIT 1;"
     cur_obj.execute(selectLastDriver)
     result = cur_obj.fetchall()
-    print(result)
+    # print(result)
     for row in result:
         driverID = int(row[0])
     print("The Driver ID is: " + str(driverID))
@@ -290,12 +290,12 @@ def view_rating(userID):
     selectRating = "SELECT Rating FROM Drivers WHERE DriverID = '" + str(userID) + "';"
     cur_obj.execute(selectRating)
     result = cur_obj.fetchall()
-    print(result)
+    # print(result)
     print("Here is your rating: \n")
     for row in result:
         try:
             viewRating = float(row[0])
-            # print(viewRating)
+            print(viewRating)
         except:
             print("You do not have a rating :( \n")
 
@@ -415,7 +415,7 @@ def modify_is_driver_active(userID):
             updateDriversQuery = "UPDATE Drivers SET IsActive = 0 WHERE DriverID = '" + str(userID) + "';"
             cur_obj.execute(updateDriversQuery)
             conn.commit()
-            print("You're status is now active")
+            print("You're status is now not active")
     
     if choice == 2:
         return
@@ -509,20 +509,6 @@ def find_user_id_in_table(userID):
         # print(comparisonUserID)
     return comparisonUserID
 
-def returning_rider_choice():
-    print('''
-    Hi Rider! What would you like to do? \n 
-    1) Call a ride \n
-    2) Rate my driver \n
-    ''') 
-    choice = get_choice([1, 2])
-    if choice == 1:
-        print("Calling Ride \n")
-        # call_Ride(userID)
-    elif choice == 2:
-        print("Rate the Driver \n")
-        # rate_My_Driver(userID)
-
 # from helper function in Assignment 4
 def get_choice(lst):
     choice = input("Enter choice number: ")
@@ -535,8 +521,8 @@ def get_choice(lst):
         choice = input("Enter choice number: ")
     return int(choice)
 
+# drop table
 def drop_all_tables():
-    # drop table
     dropUsers = "DROP TABLE Users"
     dropRiders = "DROP TABLE Riders"
     dropDrivers = "DROP TABLE Drivers"
@@ -549,7 +535,7 @@ def drop_all_tables():
 
 #main program
 if __name__ == "__main__":
-    print("start main program")
+    # print("start main program")
     # initial_create()
     # print_to_verify()
     # create()
@@ -562,4 +548,4 @@ if __name__ == "__main__":
     # drop_all_tables()
     conn.close()
     print("")
-    print("end main program")
+    # print("end main program")
