@@ -135,12 +135,15 @@ def new_user_info():
     while userID.isdigit() == False:
         userID = input("Invalid ID. Please enter your ID again: ")
 
-    userID = int(userID)
+    print("Your User ID is: " + userID)
+
+    comparisonUserID = find_user_id_in_table(userID)
+
+    while(int(userID) == comparisonUserID):
+        userID = input("This ID already exists. Please enter your ID again: ")
+        comparisonUserID = find_user_id_in_table(userID)
 
     isDriver = set_is_driver(userID, isDriver)
-
-    # selectIsDriver = "SELECT IsDriver FROM Users WHERE UserID = '" + str(userID) + "';"
-    # isDriver = cur_obj.execute(selectIsDriver)
 
     if isDriver == 1:
         new_driver_choice(userID)
@@ -149,8 +152,169 @@ def new_user_info():
         new_rider_choice(userID)
 
 def old_user_info():
-    return
+    userID = ""
+    isDriver = None
+
+    userID = input("Please enter your ID: ")
+    while userID.isdigit() == False:
+        userID = input("Invalid ID. Please enter your ID again: ")
+
+    print("Your User ID is: " + userID)
+
+    comparisonUserID = find_user_id_in_table(userID)
+
+    while(int(userID) != comparisonUserID):
+        userID = input("This ID does not exist. Please enter your ID again: ")
+        comparisonUserID = find_user_id_in_table(userID)
     
+    selectIsDriver = "SELECT IsDriver FROM Users WHERE UserID = '" + str(userID) + "';"
+    cur_obj.execute(selectIsDriver)
+    result = cur_obj.fetchall()
+    # print(result)
+    for row in result:
+        isDriver = int(row[0])
+        # print(isDriver)
+    if isDriver == 1:
+        old_driver_choice(userID)
+    else:
+        old_rider_choice(userID)
+
+def old_driver_choice(userID):
+    print('''
+    Hello Driver, Welcome Back! Please choose the following: \n 
+    1) View my rating \n
+    2) View my rides \n
+    3) Change my Active Driver mode \n
+    ''') 
+    choice = get_choice([1, 2, 3])
+    if choice == 1:
+        view_rating(userID)
+    elif choice == 2:
+        view_driver_rides(userID)
+    elif choice == 3:
+        modify_is_driver_active(userID)
+
+def old_rider_choice(userID):
+    print('''
+    Hello Rider, Welcome Back! Please choose the following: \n 
+    1) View my rides \n
+    2) Find a driver and start a ride \n
+    3) Rate my last driver \n
+    ''') 
+    choice = get_choice([1, 2, 3])
+    if choice == 1:
+        view_rider_rides(userID)
+    elif choice == 2:
+        new_rider_choice(userID)
+    elif choice == 3:
+        get_last_driver_id(userID)
+
+def get_last_driver_id(userID):
+    driverID = 0
+    selectLastDriver = "SELECT DriverID FROM Rides WHERE RiderID = '" + str(userID) + "' ORDER BY RideID DESC LIMIT 1;"
+    cur_obj.execute(selectLastDriver)
+    result = cur_obj.fetchall()
+    print(result)
+    for row in result:
+        driverID = int(row[0])
+    print("The Driver ID is: " + str(driverID))
+    print('''
+    Is this the correct Driver that you would like to rate? \n 
+    1) Yes \n
+    2) No \n
+    ''') 
+    choice = get_choice([1, 2])
+    if choice == 1:
+        rate_driver(driverID)
+    elif choice == 2:
+        change_driver(userID)
+    return driverID
+
+def get_correct_ride(userID):
+    driverID = get_last_driver_id(userID)
+    print("The Driver ID is: " + str(driverID))
+    print('''
+    Is this the correct Driver that you would like to rate? \n 
+    1) Yes \n
+    2) No \n
+    ''') 
+    choice = get_choice([1, 2])
+    if choice == 1:
+        rate_driver(driverID)
+    if choice == 2:
+        change_driver(userID)
+
+def change_driver(userID):
+    rideID = input("Enter the Ride ID for the Driver you would like to rate: ")
+    selectRide = "SELECT * FROM Rides WHERE RideID = '" + str(rideID) + "';"
+    cur_obj.execute(selectRide)
+    result = cur_obj.fetchall()
+    print(result)
+    print('''
+    Is this the correct Ride? \n 
+    1) Yes \n
+    2) No \n
+    ''') 
+    choice = get_choice([1, 2])
+    while(choice == 2):
+        change_driver(userID)
+    selectDriver = "SELECT DriverID FROM Rides WHERE RideID = '" + str(rideID) + "';"
+    cur_obj.execute(selectDriver)
+    result = cur_obj.fetchall()
+    for row in result:
+        driverID = int(row[0])
+        # print(driverID)
+    rate_driver(driverID)
+    
+def rate_driver(driverID):
+    currRating = 0
+    rating = input("What would you like to rate the driver: ")
+    selectRating = "SELECT Rating FROM Drivers WHERE DriverID = '" + str(driverID) + "';"
+    cur_obj.execute(selectRating)
+    result = cur_obj.fetchall()
+    
+    for row in result:
+        try:
+            currRating = float(row[0])
+            # print(currRating)
+            newRating = float((currRating + float(rating)) / 2)
+        except:
+            newRating = float(rating)
+    
+    updateDriversQuery = "UPDATE Drivers SET Rating = '" + str(newRating) + "' WHERE DriverID = '" + str(driverID) + "';"
+    cur_obj.execute(updateDriversQuery)
+    conn.commit()
+    print("The Driver's new rating is " + str(newRating))
+    
+def view_rating(userID):
+    selectRating = "SELECT Rating FROM Drivers WHERE DriverID = '" + str(userID) + "';"
+    cur_obj.execute(selectRating)
+    result = cur_obj.fetchall()
+    print(result)
+    print("Here is your rating: \n")
+    for row in result:
+        try:
+            viewRating = float(row[0])
+            # print(viewRating)
+        except:
+            print("You do not have a rating :( \n")
+
+def view_rider_rides(userID):
+    selectRides = "SELECT * FROM Rides WHERE RiderID = '" + str(userID) + "';"
+    cur_obj.execute(selectRides)
+    result = cur_obj.fetchall()
+    print("Here are all of your rides: \n")
+    for row in result:
+        print(row)
+
+def view_driver_rides(userID):
+    selectRides = "SELECT * FROM Rides WHERE DriverID = '" + str(userID) + "';"
+    cur_obj.execute(selectRides)
+    result = cur_obj.fetchall()
+    print("Here are all of your rides: \n")
+    for row in result:
+        print(row)
+
 def set_is_driver(userID, isDriver):
     print('''
     Hello! Are you a Rider or a Driver? \n 
@@ -199,44 +363,70 @@ def set_is_driver_active(userID):
 
     choice = get_choice([1, 2])
     if choice == 1:
-
         insertDriversQuery = '''
         INSERT INTO Drivers (DriverID, IsActive)
         VALUES(%s, %s);
         '''
         driversValues = [
-        (userID, isActive),
+        (userID, isActive)
         ]
         cur_obj.executemany(insertDriversQuery, driversValues)
         conn.commit()
-
-        # updateActive = "UPDATE Drivers SET IsActive = 1 WHERE DriverID = '" + str(userID) + "';"
-        # cur_obj.execute(updateActive)
-        # conn.commit()
 
     elif choice == 2:
-
         insertDriversQuery = '''
         INSERT INTO Drivers (DriverID, IsActive)
         VALUES(%s, %s);
         '''
         driversValues = [
-        (userID, isNotActive),
+        (userID, isNotActive)
         ]
         cur_obj.executemany(insertDriversQuery, driversValues)
         conn.commit()
 
-        # updateNotActive = "UPDATE Drivers SET IsActive = 0 WHERE DriverID = '" + str(userID) + "';"
-        # cur_obj.execute(updateNotActive)
-        # conn.commit()
+def modify_is_driver_active(userID):
+    print('''
+    Hi Driver! Would you like to change you Active Status? \n 
+    1) Yes \n
+    2) No \n
+    ''') 
+
+    isActive = None
+    selectIsActive = "SELECT IsActive FROM Drivers WHERE DriverID = '" + str(userID) + "';"
+    cur_obj.execute(selectIsActive)
+    result = cur_obj.fetchall()
+    for row in result:
+        isActive = int(row[0])
+        # print(isDriver)
+    if(isActive == 0):
+        print("You're status is: not active")
+    elif(isActive == 1):
+        print("You're status is: active")
+
+    choice = get_choice([1, 2])
+    if choice == 1:
+        if(isActive == 0):
+            updateDriversQuery = "UPDATE Drivers SET IsActive = 1 WHERE DriverID = '" + str(userID) + "';"
+            cur_obj.execute(updateDriversQuery)
+            conn.commit()
+            print("You're status is now active")
+
+        elif(isActive == 1):
+            updateDriversQuery = "UPDATE Drivers SET IsActive = 0 WHERE DriverID = '" + str(userID) + "';"
+            cur_obj.execute(updateDriversQuery)
+            conn.commit()
+            print("You're status is now active")
+    
+    if choice == 2:
+        return
 
 def create_rider(userID):
     insertRidersQuery = '''
-    INSERT INTO Riders (RiderID)
+    INSERT INTO Riders (RiderID, RideID)
     VALUES(%s, %s);
     '''
     ridersValues = [
-    (userID, 'NULL'),
+    (userID, 'NULL')
     ]
     cur_obj.executemany(insertRidersQuery, ridersValues)
     conn.commit()
@@ -249,16 +439,75 @@ def new_rider_choice(userID):
     ''') 
     choice = get_choice([1, 2])
     if choice == 1:
-        print("call ride")
+        print("Calling Ride \n")
         new_user_call_ride(userID)
     elif choice == 2:
-        print("exit")
+        print("Exit \n")
         # rate_My_Driver(userID)
 
 def new_user_call_ride(userID):
-    pickUpLoc = input("Please type your Pick Up Location")
-    dropOffLoc = input("Please type your Drop Off Location")
-    # sql2 = "UPDATE Rides SET PickUpAddress = " + pickUpLoc + ", DropOffAddress = " + dropOffLoc + " WHERE RiderID = '" + str(riderID) + "';"
+    rideCountOutput = 0
+
+    pickUpLoc = input("Please type your Pick Up Location: ")
+    dropOffLoc = input("Please type your Drop Off Location: ")
+
+    rideCount = '''
+    SELECT COUNT(*)
+    FROM Rides
+    '''
+
+    cur_obj.execute(rideCount)
+    result = cur_obj.fetchall()
+    # print(result)
+    for row in result:
+        rideCountOutput = int(row[0])
+        # print(rideCountOutput)
+
+    rideID = rideCountOutput + 1
+
+    driverID = find_driver()
+    
+    insertRidesQuery = '''
+    INSERT INTO Rides (RideID, RiderID, DriverID, PickUpLoc, DropOffLoc)
+    VALUES(%s, %s, %s, %s, %s);
+    '''
+    ridesValues = [
+    (rideID, userID, driverID, pickUpLoc, dropOffLoc),
+    ]
+    cur_obj.executemany(insertRidesQuery, ridesValues)
+    conn.commit()
+
+    print("Your Ride ID is: " + str(rideID))
+    print("Your Driver's ID is: " + str(driverID))
+
+    old_rider_choice(userID)
+
+def find_driver():
+    selectDriver = '''SELECT UserID 
+                    FROM Users u INNER JOIN Drivers d 
+                    ON u.UserID = d.DriverID
+                    WHERE d.IsActive = 1
+                    ORDER BY RAND()
+                    LIMIT 1;
+                    '''
+    cur_obj.execute(selectDriver)
+    result = cur_obj.fetchall()
+    # print(result)
+    for row in result:
+        driverID = int(row[0])
+        # print(driverID)
+    return driverID
+
+def find_user_id_in_table(userID):
+    comparisonUserID = 0
+    selectDriver = "SELECT UserID FROM Users WHERE UserID = '" + str(userID) + "';"
+    cur_obj.execute(selectDriver)
+    result = cur_obj.fetchall()
+    # print(result)
+    for row in result:
+        comparisonUserID = int(row[0])
+        # print(comparisonUserID)
+    return comparisonUserID
 
 def returning_rider_choice():
     print('''
@@ -268,10 +517,10 @@ def returning_rider_choice():
     ''') 
     choice = get_choice([1, 2])
     if choice == 1:
-        print("choice 1")
+        print("Calling Ride \n")
         # call_Ride(userID)
     elif choice == 2:
-        print("choice 2")
+        print("Rate the Driver \n")
         # rate_My_Driver(userID)
 
 # from helper function in Assignment 4
@@ -306,6 +555,11 @@ if __name__ == "__main__":
     # create()
     # insert_data()
     # user_info()
+    new_or_returning()
+    # find_driver()
+    # new_user_call_ride()
+    # find_user_id_in_table(20)
     # drop_all_tables()
     conn.close()
+    print("")
     print("end main program")
