@@ -9,8 +9,8 @@ deliverables to show your client as you go.
 ## Identifying Information
 
 * Name: Andriana Agrusa and Megnha Raswan
-* Student ID: _________ and 2337415
-* Email: _______________ and raswan@chapman.edu
+* Student ID: 2344125 and 2337415
+* Email: agrusa@chapman.edu and raswan@chapman.edu
 * Course: CPSC 408-01
 * Assignment: Assignment 5
 
@@ -18,6 +18,8 @@ deliverables to show your client as you go.
 
 * RideShare.py
 * README.md
+* ridesharedatabasedump.sql
+* Ride Share ER Diagram.pdf
 
 ## References
 
